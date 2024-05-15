@@ -1,7 +1,9 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const app = express()
 const cors = require('cors')
+const Person = require('./models/person')
 
 app.use(express.json())
 app.use(cors())
@@ -35,7 +37,7 @@ let people = [
 ]
 
 app.get('/api/persons', (request, response) => {
-  response.json(people)
+  Person.find({}).then(people => response.json(people))
 })
 
 app.get('/info', (request, response) => {
@@ -88,17 +90,15 @@ app.post('/api/persons', (request, response) => {
     return Math.floor(Math.random() * 1000000) + 1
   }
 
-  const person = {
-    id: generateId(),
+  const person = new Person({
     name: body.name,
-    number: body.number,
-  }
+    number: body.number
+  })
 
-  response.json(person)
-
+  person.save().then(savedPerson => response.json(savedPerson))
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`)
 })
