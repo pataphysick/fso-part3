@@ -41,27 +41,20 @@ app.get('/api/persons', (request, response) => {
 })
 
 app.get('/info', (request, response) => {
-  const n = people.length
   const datetime = new Date().toString()
-
-  response.send(`<p>Phonebook has info for ${n} people.</p><p>${datetime}</p>`)
+  Person.countDocuments()
+        .then(n => response.send(`<p>Phonebook has info for ${n} people.</p><p>${datetime}</p>`))
 })
 
-app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const person = people.find(person => person.id === id)
-
-  if (person) {
-    response.json(person)
-  }
-  else {
-    response.status(404).end()
-  }
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
+        .then(person => person ? response.json(person) : response.status(404).end())
+        .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
-        .then(result => response.status(204).end())
+        .then(person => response.json(person))
         .catch(error => next(error))
 })
 
